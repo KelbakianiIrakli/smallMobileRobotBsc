@@ -15,7 +15,7 @@ class Laser2PC():
     def __init__(self):
         self.laserProj = LaserProjection()
         self.pcPub = rospy.Publisher("/laserPointCloud",pc, queue_size=1)
-        self.laserSub = rospy.Subscriber("/scan",LaserScan, self.laserCallback)
+        self.laserSub = rospy.Subscriber("/scan",LaserScan, self.laserCallback,queue_size=1 )
     def laserCallback(self,data):
         #print(data)
         cloud2_out = self.laserProj.projectLaser(data)

@@ -1,4 +1,5 @@
 <launch>
+  <node name="laser2car"  pkg="laserPc"  type="laserToCarFrame.py" output="screen"/>
   <node name="ydlidar_node"  pkg="ydlidar"  type="ydlidar_node" output="screen" respawn="false" >
     <param name="port"         type="string" value="/dev/ydlidar"/>  
     <param name="frame_id"     type="string" value="laser_frame"/>
@@ -14,7 +15,7 @@
     <param name="ignore_array" type="string" value="" />
     <param name="max_abnormal_check_count"    type="int" value="2"/>
   </node>
-  <node name="laser2car"  pkg="laserPc"  type="laserToCarFrame.py"/>
+  <node name="obstacle_avoidance"  pkg="motion_plan"  type="obstacle_avoidance_v1.py" output="screen"/>
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser4"
-    args="0.0 0.0 0.18 1.570796326 0.0 0.0 /link_chassis /laser_frame 40" />
+    args="0.0 0.0 0.18 1.570796326 0.0 0.0 0.0 /link_chassis /laser_frame 40" />
 </launch>

@@ -2,7 +2,7 @@
 
 import rospy
 import math
-from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import PointCloud as pc
 from geometry_msgs.msg import Twist
 pub = None
 state_description = ''
@@ -11,31 +11,36 @@ class Server:
         self.linear_x  = 0.22
         self.angular_z= 0
         self.msg1 = rospy.Subscriber('/key', Twist, self.clbk_keyboard)
-        self.msg2 = rospy.Subscriber('/scan', LaserScan, self.clbk_laser)
+        self.msg2 = rospy.Subscriber('/laserPointCloud', pc, self.clbk_pc)
     def clbk_keyboard(self,msg1):
         self.linear_x = msg1.linear.x
         self.angular_z = msg1.angular.z
-    def clbk_laser(self,msg2):
-        count = 0
-        count = int(msg2.scan_time/msg2.time_increment)
+    def clbk_pc(self,msg2):
+        #count = 0
+        #count = int(msg2.scan_time/msg2.time_increment)
         #print("I heard a laser scan:")
         left,fleft,front,fright,right = ([] for k in range(5))
-        for i in range(count):
-            degree = math.degrees(msg2.angle_min + msg2.angle_increment * i)
-            if(degree >  0 and degree <36):
-                right.append(msg2.ranges[i])
-            elif( degree > 36 and degree <72):
-                fright.append(msg2.ranges[i])
-            elif( degree >72 and degree <108):
-                front.append(msg2.ranges[i])
-            elif( degree >108 and degree <144):
-                fleft.append(msg2.ranges[i])
-            elif( degree > 144 and degree <180):
-                left.append(msg2.ranges[i])
-                #print(msg2.ranges[i])
-                #array.append(msg2.ranges[i])
+        for i,val in enumerate(msg2.points):
+            if(val.x < 0 and val.y <0 or val.x<0 and val.y > 0):
+                degree = math.degrees(math.atan(val.y/val.x))
+            #degree = math.degrees(msg2.angle_min + msg2.angle_increment * i)
+                distance = math.sqrt(val.x**2 +val.y**2 )
+                if(degree >  54 and degree < 90):
+                    left.append(distance)
+                elif( degree > 18 and degree <54):
+                    fleft.append(distance)
+                elif( degree >-18 and degree <18):
+                    front.append(distance)
+                elif( degree >-54 and degree <-18):
+                    fright.append(distance)
+                elif( degree > -90 and degree <-54):
+                    right.append(distance)
+                #print(distance)
+                #array.append(distance)
                 #print(len(array))
                 #print(array)
+            else:
+                continue
         regions = {
             'left':  min(min(left), 100),
             	'fleft': min(min(fleft), 100),
@@ -48,7 +53,7 @@ class Server:
         self.take_action(regions)
     def take_action(self,regions):
 	global state_description
-    	linear_x = 0.4 
+    	linear_x = 0.4
     	angular_z = 0
     	msg = Twist()
     	d = 0.4
@@ -88,7 +93,7 @@ class Server:
             state_description = 'case 5 - front and fright'
             linear_x= self.linear_x/2
             if(self.angular_z > -0.3 and self.angular_z <0):
-                angular_z = self.angular_z -0.4
+                angular_z = self.angular_z -0.3
 	    else:
 		angular_z = min(abs(0.4  - abs(self.angular_z))/2,0.4)*(-1) #rotate left by 2 times less user intput
         	#self.linear_x  = 0

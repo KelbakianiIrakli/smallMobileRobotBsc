@@ -15,7 +15,7 @@ def callback(data):
     v2 = (2* data.linear.x + width * data.angular.z)/2
     print(v1,v2)
     if(v1 <0.2 and  v1>0):
-        v1+=0.1
+        v1+=0.05
     elif(v1 >-0.2 and v1<0):
         v1-=0.1
     if(v2 <0.2 and  v2>0):
