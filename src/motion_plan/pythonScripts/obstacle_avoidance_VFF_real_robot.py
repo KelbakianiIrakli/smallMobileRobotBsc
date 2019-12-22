@@ -6,10 +6,10 @@ from sensor_msgs.msg import PointCloud as pc
 from geometry_msgs.msg import Twist
 pub = None
 repulsive_force = None
-attractive_force = [-100,200]
+attractive_force = [-50,50]
 class Server:
     def __init__(self):
-        self.linear_x  = 0.22
+        self.linear_x  = 0.05
         self.angular_z= 0
         self.msg1 = rospy.Subscriber('/key', Twist, self.clbk_keyboard)
         self.msg2 = rospy.Subscriber('/laserPointCloud', pc, self.clbk_pc)
@@ -27,12 +27,12 @@ class Server:
         for i,val in enumerate(msg2.points):
             degree = math.degrees(math.atan(val.y/val.x))
             dist = math.sqrt(val.x**2 +val.y**2 )
-            x = dist * np.cos(np.deg2rad(degree))
-            y = dist * np.sin(np.deg2rad(degree))
-            single_repulsive_force = np.array([x, y])
-	    single_repulsive_force = np.true_divide(single_repulsive_force, dist ** 2)
-	    repulsive_force += single_repulsive_force
-        
+            if(dist < 1):
+                x = dist * np.cos(np.deg2rad(degree))
+                y = dist * np.sin(np.deg2rad(degree))
+                single_repulsive_force = np.array([x, y])
+                single_repulsive_force = np.true_divide(single_repulsive_force, dist ** 2)
+                repulsive_force += single_repulsive_force
         #print(regions)
         self.take_action()
 	print(repulsive_force, repulsive_force+attractive_force )
@@ -42,7 +42,7 @@ class Server:
     	angular_z = 0
     	resultant_force = repulsive_force+attractive_force
     	linear_x = resultant_force[0] /100
-    	angular_z = resultant_force[0] /20
+    	angular_z = resultant_force[1] /20
     	msg.linear.x = linear_x
     	msg.angular.z = angular_z
     	print(msg)
